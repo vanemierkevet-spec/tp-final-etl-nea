@@ -62,7 +62,17 @@ def chequear_unicidad(filas):
     # TODO 9 --------------------------------------------------------------
     # Pista: es el patrón del set que viste en la Clase 3. Armá la lista de
     # claves (una tupla por fila) y compará len(lista) con len(set(lista)).
-    raise NotImplementedError("TODO 9: implementá chequear_unicidad()")
+    claves = [
+        (fila["provincia"], fila["anio"], fila["destino"])
+        for fila in filas
+    ]
+
+    duplicados = len(claves) - len(set(claves))
+
+    if duplicados > 0:
+        return False, f"unicidad: se encontraron {duplicados} duplicados"
+
+    return True, "unicidad: no hay registros duplicados"
     # ---------------------------------------------------------------------
 
 
@@ -75,7 +85,18 @@ def chequear_rangos(filas):
     # TODO 10 -------------------------------------------------------------
     # Pista: una comprensión de lista con la condición al final te da
     # directamente las filas fuera de rango; después mirás cuántas son.
-    raise NotImplementedError("TODO 10: implementá chequear_rangos()")
+    fuera_de_rango = [
+        fila for fila in filas
+        if fila["valor_musd"] < 0
+        or fila["valor_musd"] > config.VALOR_MAXIMO_RAZONABLE
+    ]
+
+    cantidad = len(fuera_de_rango)
+
+    if cantidad > 0:
+        return False, f"rangos: {cantidad} filas fuera de rango"
+
+    return True, "rangos: todos los valores son plausibles"
     # ---------------------------------------------------------------------
 
 
@@ -171,7 +192,23 @@ def construir_resumen(filas, detalle_checks):
     #   - Para provincias únicas y ordenadas: sorted({f["provincia"] for f in filas})
     #   - Para la fecha: datetime.now().strftime("%Y-%m-%d %H:%M")
     #   - Podés agregar más claves si querés (suma puntos en la rúbrica).
-    raise NotImplementedError("TODO 11: implementá construir_resumen()")
+    valores = [f["valor_musd"] for f in filas]
+    anios = [f["anio"] for f in filas]
+    provincias = sorted({f["provincia"] for f in filas})
+
+    resumen = {
+        "fecha_ejecucion": datetime.now().strftime("%Y-%m-%d %H:%M"),
+        "cantidad_filas": len(filas),
+        "anio_desde": min(anios),
+        "anio_hasta": max(anios),
+        "provincias": provincias,
+        "valor_minimo_musd": min(valores),
+        "valor_maximo_musd": max(valores),
+        "valor_total_musd": round(sum(valores), 2),
+        "quality_checks": detalle_checks
+    }
+
+    return resumen
     # ---------------------------------------------------------------------
 
 
@@ -183,7 +220,15 @@ def guardar_resumen(resumen, carpeta=None, nombre=None):
     """
     # TODO 12a ------------------------------------------------------------
     # Muy parecido a guardar_csv(), pero con json.dump().
-    raise NotImplementedError("TODO 12a: implementá guardar_resumen()")
+    carpeta = carpeta or config.DIR_PROCESSED
+    nombre = nombre or config.ARCHIVO_SALIDA_JSON
+    os.makedirs(carpeta, exist_ok=True)
+    ruta = os.path.join(carpeta, nombre)
+
+    with open(ruta, "w", encoding="utf-8") as f:
+        json.dump(resumen, f, ensure_ascii=False, indent=2)
+
+    return ruta
     # ---------------------------------------------------------------------
 
 
@@ -196,7 +241,21 @@ def escribir_log_corrida(resumen, carpeta=None, nombre=None):
         2026-08-02 14:30 | OK | 1408 filas | 1993-2024
     """
     # TODO 12b ------------------------------------------------------------
-    raise NotImplementedError("TODO 12b: implementá escribir_log_corrida()")
+    carpeta = carpeta or config.DIR_LOGS
+    nombre = nombre or config.ARCHIVO_LOG
+    os.makedirs(carpeta, exist_ok=True)
+    ruta = os.path.join(carpeta, nombre)
+
+    linea = (
+        f"{datetime.now().strftime('%Y-%m-%d %H:%M')} | "
+        f"OK | {resumen['cantidad_filas']} filas | "
+        f"{resumen['anio_desde']}-{resumen['anio_hasta']}\n"
+    )
+
+    with open(ruta, "a", encoding="utf-8") as f:
+        f.write(linea)
+
+    return ruta
     # ---------------------------------------------------------------------
 
 

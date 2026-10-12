@@ -13,13 +13,14 @@ Fuente de datos: API de Series de Tiempo de datos.gob.ar
   Documentación: https://apis.datos.gob.ar/series/api/
 
 IDs verificados contra la API el 2026-08-02.
+
 """
 
 # ----------------------------------------------------------------------
 # API
 # ----------------------------------------------------------------------
 API_BASE = "https://apis.datos.gob.ar/series/api/series"
-TIMEOUT_SEGUNDOS = 20
+TIMEOUT_SEGUNDOS = 60
 
 # ----------------------------------------------------------------------
 # RUTAS
